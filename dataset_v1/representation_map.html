@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Content Analysis - Computational Inequalities</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+            background-color: #f5f7fa;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            font-size: 1.2em;
+            text-align: center;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto 30px;
+        }
+        
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+        }
+        
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+        
+        .controls {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .controls h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eaeaea;
+            padding-bottom: 10px;
+        }
+        
+        .filter-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .sort-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.95em;
+        }
+        
+        .filter-btn {
+            background-color: #e8f4fd;
+            color: #3498db;
+            border: 2px solid #3498db;
+        }
+        
+        .filter-btn:hover {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .sort-btn {
+            background-color: #f0f7f0;
+            color: #27ae60;
+            border: 2px solid #27ae60;
+        }
+        
+        .sort-btn:hover {
+            background-color: #27ae60;
+            color: white;
+        }
+        
+        .reset-btn {
+            background-color: #fef2f2;
+            color: #ef4444;
+            border: 2px solid #ef4444;
+        }
+        
+        .reset-btn:hover {
+            background-color: #ef4444;
+            color: white;
+        }
+        
+        .active {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            background-color: #3498db !important;
+            color: white !important;
+        }
+        
+        .sort-btn.active {
+            background-color: #27ae60 !important;
+        }
+        
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+        
+        .video-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+        
+        .video-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+        
+        .thumbnail-container {
+            position: relative;
+            height: 180px;
+            overflow: hidden;
+        }
+        
+        .thumbnail {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        
+        .video-card:hover .thumbnail {
+            transform: scale(1.05);
+        }
+        
+        .view-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(231, 76, 60, 0.9);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
+        .video-info {
+            padding: 20px;
+        }
+        
+        .video-title {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 12px;
+            color: #2c3e50;
+            line-height: 1.4;
+            overflow: hidden;
+            
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            
+            display: -moz-box;
+            -moz-line-clamp: 2;
+            -moz-box-orient: vertical;
+            
+            display: -ms-flexbox;
+            -ms-line-clamp: 2;
+            -ms-box-orient: vertical;
+            
+            display: flexbox;
+            line-clamp: 2;
+            box-orient: vertical;
+        }
+        
+        .video-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+        
+        .meta-label {
+            font-weight: bold;
+            color: #34495e;
+        }
+        
+        .channel {
+            color: #3498db;
+            font-weight: 500;
+        }
+        
+        .date {
+            color: #95a5a6;
+            font-style: italic;
+        }
+        
+        .tags {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        
+        .tag {
+            display: inline-block;
+            background: #f1f8ff;
+            color: #0366d6;
+            padding: 4px 10px;
+            margin: 3px;
+            border-radius: 15px;
+            font-size: 0.8em;
+        }
+        
+        .video-link {
+            display: block;
+            text-align: center;
+            background: #f8f9fa;
+            color: #495057;
+            text-decoration: none;
+            padding: 12px;
+            border-top: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .video-link:hover {
+            background: #e9ecef;
+            color: #212529;
+        }
+        
+        @media (max-width: 768px) {
+            .video-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 20px;
+            }
+            
+            .filter-buttons,
+            .sort-buttons {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+            }
+            
+            .stats-bar {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🔍 YouTube Content Analysis Dashboard</h1>
+        <p class="subtitle">Visualizing system recommendations and metadata patterns for computational inequalities research</p>
+        
+        <div class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-value" id="total-videos">10</span>
+                <span class="stat-label">Total Videos</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="total-views">36.4M</span>
+                <span class="stat-label">Total Views</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="avg-views">3.64M</span>
+                <span class="stat-label">Avg. Views</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="date-range">2014-2025</span>
+                <span class="stat-label">Date Range</span>
+            </div>
+        </div>
+    </header>
+
+    <section class="controls">
+        <h2>📊 Filter & Sort Controls</h2>
+        
+        <div class="filter-section">
+            <h3>Filter by Character/Theme:</h3>
+            <div class="filter-buttons">
+                <button class="filter-btn" onclick="filterByTheme('all')" id="filter-all">Show All</button>
+                <button class="filter-btn" onclick="filterByTheme('pokemon')">Pokémon</button>
+                <button class="filter-btn" onclick="filterByTheme('horror')">Horror/FNAF</button>
+                <button class="filter-btn" onclick="filterByTheme('classic')">Classic Cartoons</button>
+                <button class="filter-btn" onclick="filterByTheme('kids')">Kids Content</button>
+                <button class="filter-btn" onclick="filterByTheme('adult')">Adult Animation</button>
+            </div>
+        </div>
+        
+        <div class="sort-section">
+            <h3>Sort by:</h3>
+            <div class="sort-buttons">
+                <button class="sort-btn" onclick="sortVideos('viewsDesc')">Most Views ↓</button>
+                <button class="sort-btn" onclick="sortVideos('viewsAsc')">Least Views ↑</button>
+                <button class="sort-btn" onclick="sortVideos('dateDesc')">Newest First</button>
+                <button class="sort-btn" onclick="sortVideos('dateAsc')">Oldest First</button>
+                <button class="reset-btn" onclick="resetFilters()">Reset All</button>
+            </div>
+        </div>
+    </section>
+
+    <main>
+        <div class="video-grid" id="video-container"></div>
+    </main>
+
+    <script>
+        const videoData = [
+            {
+                id: 1,
+                filename: "freddy_fnaf_animation_horror_01.png",
+                title: "5 AM at Freddy's: The Prequel | Freddy, FNAF, animation, game",
+                channel: "The Living Tombstone",
+                views: 89130000,
+                date: "2014-08-18",
+                link: "https://www.youtube.com/watch?v=v2IqiOWbDsE",
+                tags: ["Horror", "FNAF", "Animation", "Game"],
+                theme: "horror"
+            },
+            {
+                id: 2,
+                filename: "pokemon_3d_dragon_anime_commentary_02.png",
+                title: "Computer Warrior 3D Dragon (Pokémon) — anime commentary",
+                channel: "BaoKeMeng QianQian",
+                views: 1234567,
+                date: "2017-08-18",
+                link: "https://www.youtube.com/watch?v=JVFWoqzoqtA",
+                tags: ["Pokémon", "3D", "Anime", "Commentary"],
+                theme: "pokemon"
+            },
+            {
+                id: 3,
+                filename: "shinchan_new_episode_english_subtitles_03.png",
+                title: "Shinchan New Episode With English subtitles",
+                channel: "Crayon Shinchan Official",
+                views: 3456789,
+                date: "2021-05-07",
+                link: "https://www.youtube.com/watch?v=RtrHvPzMkYY",
+                tags: ["Shinchan", "Cartoon", "English Subtitles"],
+                theme: "kids"
+            },
+            {
+                id: 4,
+                filename: "rickMorty_vindicators_compilation_04.png",
+                title: "The Vindicators (Compilation) | Rick and Morty | adult swim",
+                channel: "adult swim",
+                views: 2345678,
+                date: "2019-01-15",
+                link: "https://www.youtube.com/watch?v=jzV4RdrIfvY",
+                tags: ["Rick and Morty", "Adult Swim", "Compilation"],
+                theme: "adult"
+            },
+            {
+                id: 5,
+                filename: "pokemon_evolution_animated_explained_05.png",
+                title: "Pokémon Evolution Explanations Animation | Pokemon, evolution, Pikachu",
+                channel: "Pokemon Kids TV",
+                views: 4567890,
+                date: "2019-03-12",
+                link: "https://www.youtube.com/watch?v=RY1P2z-q_Dk",
+                tags: ["Pokémon", "Evolution", "Animation", "Educational"],
+                theme: "pokemon"
+            },
+            {
+                id: 6,
+                filename: "tomAndJerry_megaCompilation_vol7_06.png",
+                title: "Tom and Jerry | Mega Compilation | Vol. 7 | Warner Classics",
+                channel: "Warner Classics",
+                views: 12345678,
+                date: "2021-01-05",
+                link: "https://www.youtube.com/watch?v=_GE6zf_hH48",
+                tags: ["Tom and Jerry", "Classic Cartoon", "Compilation"],
+                theme: "classic"
+            },
+            {
+                id: 7,
+                filename: "peppaPig_holidayAdventure_fullEpisodes_07.png",
+                title: "Peppa's Holiday Adventure | Peppa Pig Full Episodes",
+                channel: "Peppa Pig - Official Channel",
+                views: 6060000,
+                date: "2023-01-12",
+                link: "https://youtu.be/RM4MU1WjglI",
+                tags: ["Peppa Pig", "Kids", "Full Episodes"],
+                theme: "kids"
+            },
+            {
+                id: 8,
+                filename: "snoopy_beagleScout_snoopyShow_appleTV_08.png",
+                title: "How to Be a Beagle Scout | The Snoopy Show | Peanuts",
+                channel: "Snoopy",
+                views: 1920000,
+                date: "2024-05-31",
+                link: "https://youtu.be/7Az8BQYzUDo",
+                tags: ["Snoopy", "Peanuts", "Apple TV+"],
+                theme: "kids"
+            },
+            {
+                id: 9,
+                filename: "littleFox_peterRabbit_benjaminBunny_bedtimeStories_09.png",
+                title: "Tale of Peter Rabbit & Benjamin Bunny Full Story | 23 min.",
+                channel: "Little Fox - Kids Stories and Songs",
+                views: 18032123,
+                date: "2023-07-28",
+                link: "https://youtu.be/ZB4lOVRMt5I",
+                tags: ["Peter Rabbit", "Bedtime Stories", "Kids"],
+                theme: "kids"
+            },
+            {
+                id: 10,
+                filename: "weBareBears_assemblyRequired_fullEpisode_cartoonNetwork_10.png",
+                title: "Assembly Required | FULL EPISODE | We Bare Bears",
+                channel: "We Bare Bears",
+                views: 110415,
+                date: "2025-03-23",
+                link: "https://youtu.be/VwE6RXrhi_o",
+                tags: ["We Bare Bears", "Cartoon Network", "Full Episode"],
+                theme: "kids"
+            }
+        ];
+
+        function formatViews(views) {
+            if (views >= 1000000) {
+                return (views / 1000000).toFixed(1) + 'M';
+            } else if (views >= 1000) {
+                return (views / 1000).toFixed(0) + 'K';
+            }
+            return views.toString();
+        }
+
+        function formatDate(dateStr) {
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            return new Date(dateStr).toLocaleDateString('en-US', options);
+        }
+
+        function calculateStats(videos) {
+            const totalVideos = videos.length;
+            const totalViews = videos.reduce((sum, video) => sum + video.views, 0);
+            const avgViews = Math.round(totalViews / totalVideos);
+            
+            const dates = videos.map(v => new Date(v.date));
+            const minDate = new Date(Math.min(...dates));
+            const maxDate = new Date(Math.max(...dates));
+            const dateRange = `${minDate.getFullYear()}-${maxDate.getFullYear()}`;
+            
+            return {
+                totalVideos,
+                totalViews: formatViews(totalViews),
+                avgViews: formatViews(avgViews),
+                dateRange
+            };
+        }
+
+        function updateStats(videos) {
+            const stats = calculateStats(videos);
+            document.getElementById('total-videos').textContent = stats.totalVideos;
+            document.getElementById('total-views').textContent = stats.totalViews;
+            document.getElementById('avg-views').textContent = stats.avgViews;
+            document.getElementById('date-range').textContent = stats.dateRange;
+        }
+
+        function renderVideos(videos) {
+            const container = document.getElementById('video-container');
+            container.innerHTML = '';
+            
+            videos.forEach(video => {
+                const card = document.createElement('div');
+                card.className = 'video-card';
+                card.setAttribute('data-id', video.id);
+                card.setAttribute('data-theme', video.theme);
+                
+                const tagsHTML = video.tags.map(tag => 
+                    `<span class="tag">${tag}</span>`
+                ).join('');
+                
+                card.innerHTML = `
+                    <div class="thumbnail-container">
+                        <img src="Thumbnails/${video.filename}" 
+                             alt="${video.title}" 
+                             class="thumbnail"
+                             onerror="this.src='https://via.placeholder.com/300x180/cccccc/969696?text=Thumbnail+Missing'">
+                        <div class="view-badge">${formatViews(video.views)} views</div>
+                    </div>
+                    <div class="video-info">
+                        <div class="video-title">${video.title}</div>
+                        <div class="video-meta">
+                            <div>
+                                <span class="meta-label">Channel:</span>
+                                <span class="channel">${video.channel}</span>
+                            </div>
+                            <div>
+                                <span class="meta-label">Uploaded:</span>
+                                <span class="date">${formatDate(video.date)}</span>
+                            </div>
+                        </div>
+                        <div class="tags">
+                            ${tagsHTML}
+                        </div>
+                    </div>
+                    <a href="${video.link}" target="_blank" class="video-link">
+                        ▶ Watch on YouTube
+                    </a>
+                `;
+                
+                container.appendChild(card);
+            });
+            
+            updateStats(videos);
+            updateButtonStates();
+        }
+
+        let currentFilter = 'all';
+        let currentSort = 'viewsDesc';
+        let isUserInteracted = false;
+        
+        function filterByTheme(theme) {
+            currentFilter = theme;
+            isUserInteracted = true;
+            applyFiltersAndSort();
+        }
+        
+        function sortVideos(sortType) {
+            currentSort = sortType;
+            isUserInteracted = true;
+            applyFiltersAndSort();
+        }
+        
+        function applyFiltersAndSort() {
+            let filteredVideos = [...videoData];
+            
+            if (currentFilter !== 'all') {
+                filteredVideos = filteredVideos.filter(video => 
+                    video.theme === currentFilter
+                );
+            }
+            
+            switch(currentSort) {
+                case 'viewsDesc':
+                    filteredVideos.sort((a, b) => b.views - a.views);
+                    break;
+                case 'viewsAsc':
+                    filteredVideos.sort((a, b) => a.views - b.views);
+                    break;
+                case 'dateDesc':
+                    filteredVideos.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    break;
+                case 'dateAsc':
+                    filteredVideos.sort((a, b) => new Date(a.date) - new Date(b.date));
+                    break;
+            }
+            
+            renderVideos(filteredVideos);
+        }
+        
+        function resetFilters() {
+            currentFilter = 'all';
+            currentSort = 'viewsDesc';
+            isUserInteracted = false;
+            renderVideos(videoData);
+        }
+        
+        function updateButtonStates() {
+            document.querySelectorAll('.filter-btn, .sort-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            if (isUserInteracted) {
+                const activeFilterBtn = document.querySelector(`.filter-btn[onclick*="${currentFilter}"]`);
+                if (activeFilterBtn) {
+                    activeFilterBtn.classList.add('active');
+                }
+                
+                const activeSortBtn = document.querySelector(`.sort-btn[onclick*="${currentSort}"]`);
+                if (activeSortBtn) {
+                    activeSortBtn.classList.add('active');
+                }
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            renderVideos(videoData);
+        });
+    </script>
+</body>
+</html>
